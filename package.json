@@ -1,0 +1,14 @@
+{
+  "name": "ghs-medical-chat",
+  "version": "1.0.0",
+  "description": "GHS general health information chat",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@google/genai": "latest",
+    "dotenv": "latest",
+    "express": "latest"
+  }
+}

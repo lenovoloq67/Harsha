@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f7f9fc" />
+  <title>GHS — Phrmacy care hud</title>
+
+  <style>
+    :root {
+      --ink: #172b3a;
+      --muted: #718091;
+      --teal: #087f78;
+      --teal-dark: #066b65;
+      --line: #e7edf1;
+      --surface: #ffffff;
+      --page: #f7f9fc;
+      --soft-teal: #eaf7f5;
+      --shadow: 0 12px 36px rgba(24, 48, 64, .07);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background: var(--page);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+    }
+
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 250px minmax(0, 1fr);
+    }
+
+    aside {
+      display: flex;
+      flex-direction: column;
+      padding: 25px 18px;
+      background: #fff;
+      border-right: 1px solid var(--line);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 0 8px;
+      color: var(--ink);
+      font-size: 20px;
+      font-weight: 750;
+      letter-spacing: -.5px;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 36px;
+      height: 36px;
+      place-items: center;
+      border-radius: 12px;
+      background: var(--teal);
+      color: white;
+      font-size: 21px;
+      font-weight: 500;
+    }
+
+    .new-chat {
+      width: 100%;
+      margin: 32px 0 22px;
+      padding: 12px 14px;
+      border: 0;
+      border-radius: 11px;
+      background: var(--teal);
+      color: white;
+      text-align: left;
+      font-weight: 650;
+      transition: background .2s ease, transform .2s ease;
+    }
+
+    .new-chat:hover { background: var(--teal-dark); transform: translateY(-1px); }
+
+    .side-label {
+      margin: 10px 9px;
+      color: #9aa6b2;
+      font-size: 11px;
+      font-weight: 750;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .side-link {
+      padding: 11px 10px;
+      border-radius: 9px;
+      color: #627384;
+      font-size: 14px;
+    }
+
+    .side-link.active {
+      background: var(--soft-teal);
+      color: var(--teal-dark);
+      font-weight: 650;
+    }
+
+    .sidebar-bottom {
+      margin-top: auto;
+      padding: 14px 10px 0;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .main {
+      display: flex;
+      min-width: 0;
+      flex-direction: column;
+    }
+
+    .topbar {
+      display: flex;
+      min-height: 72px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 6%;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,.78);
+    }
+
+    .topbar-title { font-size: 14px; font-weight: 650; }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #617386;
+      font-size: 12px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #35b783;
+    }
+
+    .content {
+      width: min(850px, 90%);
+      margin: 0 auto;
+      padding: 50px 0 28px;
+      flex: 1;
+    }
+
+    .welcome { margin-bottom: 30px; }
+
+    .eyebrow {
+      margin: 0 0 12px;
+      color: var(--teal);
+      font-size: 12px;
+      font-weight: 750;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(30px, 4vw, 42px);
+      letter-spacing: -1.5px;
+      line-height: 1.15;
+    }
+
+    .welcome-copy {
+      max-width: 600px;
+      margin: 13px 0 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    .safety {
+      display: flex;
+      gap: 12px;
+      margin: 24px 0;
+      padding: 15px 17px;
+      border: 1px solid #f0dfb3;
+      border-radius: 12px;
+      background: #fffaf0;
+      color: #735d2e;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .safety strong { display: block; margin-bottom: 2px; }
+
+    .chat-card {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .chat-heading {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 17px 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .assistant-icon {
+      display: grid;
+      width: 38px;
+      height: 38px;
+      place-items: center;
+      border-radius: 12px;
+      background: var(--soft-teal);
+      color: var(--teal-dark);
+      font-size: 19px;
+    }
+
+    .chat-heading strong { display: block; font-size: 14px; }
+    .chat-heading span { color: var(--muted); font-size: 12px; }
+
+    #messages {
+      display: flex;
+      min-height: 250px;
+      max-height: 390px;
+      flex-direction: column;
+      gap: 13px;
+      overflow-y: auto;
+      padding: 22px 20px;
+    }
+
+    .message {
+      max-width: min(82%, 590px);
+      padding: 12px 15px;
+      border-radius: 14px;
+      font-size: 14px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .message.assistant {
+      align-self: flex-start;
+      border: 1px solid #e8efef;
+      border-bottom-left-radius: 5px;
+      background: #f5f9f9;
+    }
+
+    .message.user {
+      align-self: flex-end;
+      border-bottom-right-radius: 5px;
+      background: var(--teal);
+      color: white;
+    }
+
+    .composer {
+      display: flex;
+      gap: 10px;
+      padding: 14px;
+      border-top: 1px solid var(--line);
+      background: #fcfdfd;
+    }
+
+    .composer input {
+      min-width: 0;
+      flex: 1;
+      padding: 13px 14px;
+      border: 1px solid #dce5e9;
+      border-radius: 10px;
+      outline: none;
+      background: white;
+      color: var(--ink);
+      font-size: 14px;
+    }
+
+    .composer input:focus {
+      border-color: #65b7af;
+      box-shadow: 0 0 0 3px rgba(8,127,120,.1);
+    }
+
+    .composer button {
+      padding: 0 20px;
+      border: 0;
+      border-radius: 10px;
+      background: var(--teal);
+      color: white;
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    .composer button:hover { background: var(--teal-dark); }
+
+    .fine-print {
+      margin: 11px 4px 0;
+      color: #8a98a5;
+      font-size: 11px;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    @media (max-width: 720px) {
+      .app { grid-template-columns: 1fr; }
+      aside { display: none; }
+      .topbar { min-height: 60px; padding: 0 5%; }
+      .content { width: 92%; padding-top: 34px; }
+      #messages { min-height: 230px; padding: 17px 14px; }
+      .chat-heading { padding: 14px; }
+      .composer { padding: 10px; }
+      .composer button { padding: 0 14px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <aside>
+      <div class="brand">
+        <div class="brand-mark">+</div>
+        <span>GHS</span>
+      </div>
+
+      <button class="new-chat" id="new-chat">＋ &nbsp; New conversation</button>
+
+      <div class="side-label">Workspace</div>
+      <div class="side-link active">✦ &nbsp; Health assistant</div>
+      <div class="side-link">▤ &nbsp; Health topics</div>
+
+      <div class="sidebar-bottom">
+        <strong>Privacy reminder</strong><br />
+        Avoid sharing your  other personal health details.
+      </div>
+    </aside>
+
+    <section class="main">
+      <header class="topbar">
+        <div class="topbar-title">Health assistant</div>
+        <div class="status"><span class="status-dot"></span> Available</div>
+      </header>
+
+      <main class="content">
+        <section class="welcome">
+          <p class="eyebrow">A clearer place to start</p>
+          <h1>Health questions,<br />explained simply.</h1>
+          <p class="welcome-copy">
+            Ask a related health question to get  information.
+            For personal medical advice, speak with a qualified healthcare professional.
+          </p>
+        </section>
+
+        <div class="safety">
+          <span aria-hidden="true">ⓘ</span>
+          <div>
+            <strong>This assistant is not a doctor.</strong>
+            It cannot diagnose, prescribe treatment, or handle emergencies.
+            If you may be having an emergency, contact your local emergency service.
+          </div>
+        </div>
+
+        <section class="chat-card" aria-label="Health chat">
+          <div class="chat-heading">
+            <div class="assistant-icon">✦</div>
+            <div>
+              <strong>GHS assistant</strong>
+              <span>General health information</span>
+            </div>
+          </div>
+
+          <div id="messages" aria-live="polite">
+            <div class="message assistant">
+              Hello! I can help explain general health topics in simple language.
+              What would you like to ask?
+            </div>
+          </div>
+
+          <form class="composer" id="chat-form">
+            <input
+              id="user-input"
+              type="text"
+              placeholder="Type a general health question..."
+              aria-label="Type a general health question"
+              autocomplete="off"
+              required
+            />
+            <button type="submit">Send</button>
+          </form>
+        </section>
+
+        <p class="fine-print">
+           Do not enter
+          personal or sensitive medical information.
+        </p>
+      </main>
+    </section>
+  </div>
+
+  <script>
+
+  const form = document.getElementById("chat-form");
+  const input = document.getElementById("user-input");
+  const messages = document.getElementById("messages");
+  const newChatButton = document.getElementById("new-chat");
+
+  function addMessage(text, sender) {
+    const message = document.createElement("div");
+    message.className = `message ${sender}`;
+    message.textContent = text;
+    messages.appendChild(message);
+    messages.scrollTop = messages.scrollHeight;
+    return message;
+  }
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const question = input.value.trim();
+    if (!question) return;
+
+    addMessage(question, "user");
+    input.value = "";
+
+    const waitingMessage = addMessage("Thinking...", "assistant");
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: question })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "The request failed.");
+      }
+
+      waitingMessage.textContent = data.reply;
+    } catch (error) {
+      waitingMessage.textContent =
+        error.message || "Could not connect. Make sure the server is running.";
+    }
+
+    messages.scrollTop = messages.scrollHeight;
+  });
+
+  newChatButton.addEventListener("click", () => {
+    messages.innerHTML = "";
+    addMessage(
+      "Hello! I can help explain general health topics in simple language. What would you like to ask?",
+      "assistant"
+    );
+    input.focus();
+  });
+</script>
+</body>
+</html>
